@@ -52,7 +52,7 @@ PrIssueToPreprod() {
     # Updates the issue branch, relative to the preprod branch
     git checkout $preprod_branch
     git pull $preprod_branch
-    git checkout nom_de_la_branche
+    git checkout $issue_branch_name
     git merge $preprod_branch
 
     # Create a pull request from the issue branch to the target branch (preprod)
