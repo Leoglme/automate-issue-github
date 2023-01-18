@@ -30,7 +30,7 @@ Help() {
   echo "options:"
   echo ""
   echo "create [ticket_number] Create, fetch and checkout branch for ticket ( example: izigit create 654 )"
-  echo "reset [branch_name] Reset of a branch, so that it is strictly identical to the preprod branch ( example: izigit reset test )"
+  echo "reset Reset test branch, so that it is strictly identical to the preprod branch ( example: izigit reset )"
   echo "test Merge issue branch into test branch ( example: izigit test )"
   echo "pr Creating a pull request from the github issue branch to the preprod branch ( example: izigit pr )"
   echo "h     Print this Help."
