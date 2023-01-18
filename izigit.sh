@@ -48,6 +48,7 @@ PrIssueToPreprod() {
 # Arguments: $2 = ticket number
 MergeIssueInTest() {
   if [ $2 ]; then
+    test_branch="test"
     # Get branch name with ticket number
     branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
 
@@ -56,9 +57,10 @@ MergeIssueInTest() {
       exit 0
     fi
 
-    git checkout test
-    git pull origin test
+    git checkout $test_branch
+    git pull origin $current_branch
     git merge $current_branch
+    git push origin $test_branch
     exit 0
   fi
   echo "Please specify allows ticket number, izigit test [ticket_number] ( example: izigit test 654 )"
