@@ -36,12 +36,54 @@ Help() {
   echo "h     Print this Help."
 }
 
-# Creating a pull request from the github issue branch to the preprod branch //ticket number
+#Opération "Create PR"
+#
+#    = création d'une pull request de la branche du ticket vers la branche preprod
+#    $ git checkout preprod
+#    $ git pull preprod
+#    $ git checkout nom_de_la_branche
+#    $ git merge preprod
+#    Vérifier si il y a des conflits ($git status | grep "unmerged")
+#    Si conflit, on affiche un message pour demander au user de résoudre les conflits puis de relancer la commande "create PR"
+#    Si aucun conflit, on continue le script
+#    $ git checkout nom_de_la_branche_du_ticket && gh pr create
+#    Exemple d'utilisation : $ izigit pr
+
+# Creating a pull request from the github issue branch to the preprod branch
+# Arguments: $2 = ticket number
 PrIssueToPreprod() {
-  # Get the current git branch
-  current_branch=$(git rev-parse --abbrev-ref HEAD)
-  # Create a pull request from the issue branch to the target branch (preprod)
-  gh pr create --base preprod --head $current_branch
+  if [ $2 ]; then
+    preprod_branch=preprod
+    # Get branch name with ticket number
+    issue_branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
+
+    if [ -z $issue_branch_name ]; then
+      echo "No git branch found for ticket $2"
+      exit 0
+    fi
+
+    # Updates the issue branch, relative to the preprod branch
+    git checkout $preprod_branch
+    git pull $preprod_branch
+    git checkout nom_de_la_branche
+    git merge $preprod_branch
+
+    # Create a pull request from the issue branch to the target branch (preprod)
+    gh pr create --base preprod --head $issue_branch_name
+
+    # Check if there are any conflicts
+    if [$git status | grep "unmerged"]; then
+      echo "Please fix merge conflicts before create pull request"
+      exit 0
+    fi
+
+    # Add comment to issue
+    comment="$date - create pull request branch $issue_branch_name to $preprod_branch - $github_name"
+    gh issue comment $2 -b "$comment"
+    echo $comment
+    exit 0
+  fi
+  echo "Please specify allows ticket number, izigit pr [ticket_number] ( example: izigit pr 654 )"
 }
 
 # Fonction for merge issue branch into test branch
