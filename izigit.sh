@@ -55,9 +55,11 @@ PrIssueToPreprod() {
     git checkout $issue_branch_name
     git merge $preprod_branch
 
+    git status
+
     # Check if there are any conflicts
     #disable lf and crlf warnings
-    git config core.autocrlf falsegit config core.autocrlf false
+    git config core.autocrlf false
     if git diff --name-only --diff-filter=U | grep -q "^"; then
       echo "There are merge conflicts to resolve :"
       git diff --name-only --diff-filter=U
