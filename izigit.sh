@@ -51,7 +51,7 @@ MergeIssueInTest() {
     # Get branch name with ticket number
     branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
 
-    if [ $branch_name ]; then
+    if [ -z $branch_name ]; then
       echo "No git branch found for ticket $2"
       exit 0
     fi
@@ -59,6 +59,7 @@ MergeIssueInTest() {
     git checkout test
     git pull origin test
     git merge $current_branch
+    exit 0
   fi
   echo "Please specify allows ticket number, izigit test [ticket_number] ( example: izigit test 654 )"
 }
