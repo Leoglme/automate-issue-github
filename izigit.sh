@@ -55,14 +55,19 @@ PrIssueToPreprod() {
     git checkout $issue_branch_name
     git merge $preprod_branch
 
-    # Create a pull request from the issue branch to the target branch (preprod)
-    gh pr create --base preprod --head $issue_branch_name
-
     # Check if there are any conflicts
-    if [$git status | grep "unmerged"]; then
-      echo "Please fix merge conflicts before create pull request"
+    #disable lf and crlf warnings
+    git config core.autocrlf falsegit config core.autocrlf false
+    if git diff --name-only --diff-filter=U | grep -q "^"; then
+      echo "There are merge conflicts to resolve :"
+      git diff --name-only --diff-filter=U
       exit 0
     fi
+
+    # Get issue title
+    pr_title=$(gh issue view $2 --json title --jq .title)
+    # Create a pull request from the issue branch to the target branch (preprod)
+    gh pr create --base preprod --head $issue_branch_name -t $pr_title
 
     # Add comment to issue
     comment="$date - create pull request branch $issue_branch_name to $preprod_branch - $github_name"
