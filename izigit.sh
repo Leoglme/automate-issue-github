@@ -36,19 +36,6 @@ Help() {
   echo "h     Print this Help."
 }
 
-#Opération "Create PR"
-#
-#    = création d'une pull request de la branche du ticket vers la branche preprod
-#    $ git checkout preprod
-#    $ git pull preprod
-#    $ git checkout nom_de_la_branche
-#    $ git merge preprod
-#    Vérifier si il y a des conflits ($git status | grep "unmerged")
-#    Si conflit, on affiche un message pour demander au user de résoudre les conflits puis de relancer la commande "create PR"
-#    Si aucun conflit, on continue le script
-#    $ git checkout nom_de_la_branche_du_ticket && gh pr create
-#    Exemple d'utilisation : $ izigit pr
-
 # Creating a pull request from the github issue branch to the preprod branch
 # Arguments: $2 = ticket number
 PrIssueToPreprod() {
