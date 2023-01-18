@@ -32,7 +32,7 @@ Help() {
   echo "create [ticket_number] Create, fetch and checkout branch for ticket ( example: izigit create 654 )"
   echo "reset Reset test branch, so that it is strictly identical to the preprod branch ( example: izigit reset )"
   echo "test [ticket_number] Merge issue branch into test branch ( example: izigit test 654 )"
-  echo "pr Creating a pull request from the github issue branch to the preprod branch ( example: izigit pr )"
+  echo "pr [ticket_number] Creating a pull request from the github issue branch to the preprod branch ( example: izigit pr 654 )"
   echo "h     Print this Help."
 }
 
@@ -61,6 +61,11 @@ MergeIssueInTest() {
     git pull origin $test_branch
     git merge $branch_name
     git push origin $test_branch
+
+    # Add comment to issue
+    comment="$date - merge branch $branch_name into $test_branch - $github_name"
+    gh issue comment $2 -b "$comment"
+    echo $comment
     exit 0
   fi
   echo "Please specify allows ticket number, izigit test [ticket_number] ( example: izigit test 654 )"
@@ -140,3 +145,4 @@ if [ $OPTIND -eq 1 ] && [ $# -eq 0 ]; then echo "An argument is required, please
 if [ "$1" == "create" ]; then CreateBranch $1 $2; fi
 if [ "$1" == "reset" ]; then ResetTestToPreprod; fi
 if [ "$1" == "test" ]; then MergeIssueInTest $1 $2; fi
+if [ "$1" == "pr" ]; then PrIssueToPreprod $1 $2; fi
