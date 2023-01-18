@@ -55,21 +55,19 @@ PrIssueToPreprod() {
     git merge $preprod_branch
     git push origin $issue_branch_name
 
-    git status
+    # Check if there are any conflicts
+    #disable lf and crlf warnings
+    git config core.autocrlf false
+    if git diff --name-only --diff-filter=U | grep -q "^"; then
+      echo "There are merge conflicts to resolve :"
+      git diff --name-only --diff-filter=U
+      exit 0
+    fi
 
-#    # Check if there are any conflicts
-#    #disable lf and crlf warnings
-#    git config core.autocrlf false
-#    if git diff --name-only --diff-filter=U | grep -q "^"; then
-#      echo "There are merge conflicts to resolve :"
-#      git diff --name-only --diff-filter=U
-#      exit 0
-#    fi
-#
-#    # Get issue title
-#    pr_title=$(gh issue view $2 --json title --jq .title)
-#    # Create a pull request from the issue branch to the target branch (preprod)
-#    gh pr create --base preprod --head $issue_branch_name -t "$pr_title" -b ""
+    # Get issue title
+    pr_title=$(gh issue view $2 --json title --jq .title)
+    # Create a pull request from the issue branch to the target branch (preprod)
+    gh pr create --base preprod --head $issue_branch_name -t "$pr_title" -b ""
 
     # Add comment to issue
     comment="$date - create pull request branch $issue_branch_name to $preprod_branch - $github_name"
