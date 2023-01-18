@@ -56,14 +56,9 @@ MergeIssueInTest() {
       echo "No git branch found for ticket $2"
       exit 0
     fi
-    echo "git checkout "$test_branch""
     git checkout "$test_branch"
-    echo "git pull origin "$test_branch""
     git pull origin "$test_branch"
-
-    echo "git merge "$branch_name""
-    git merge "$branch_name"
-    echo "git push origin "$test_branch""
+    git merge 4-task-4
     git push origin "$test_branch"
     exit 0
   fi
