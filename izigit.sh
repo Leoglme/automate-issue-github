@@ -5,6 +5,14 @@ command -v gh >/dev/null 2>&1 || {
   exit 1
 }
 
+# Global variable
+
+# Retrieving the current date
+date=$(date +"%d/%m/%Y %T")
+
+# Get Your github Username
+github_name=$(gh api user -q .name)
+
 # Help command
 
 # Fonction for display help
@@ -109,8 +117,6 @@ ResetTestToPreprod() {
 # Arguments: $2 = ticket number
 CreateBranch() {
   if [ $2 ]; then
-    # Get Your github Username
-    github_name=$(gh api user -q .name)
     # Get the title of the issue using the gh command
     issue_title=$(gh issue view $2 --json title --jq .title)
     # remove special characters from issue_title
@@ -125,9 +131,6 @@ CreateBranch() {
     git fetch origin
     # Checkout to the created branch
     git checkout $branch_name
-
-    # Retrieving the current date
-    date=$(date +"%d/%m/%Y %T")
 
     # Affichage de la date
     comment="$date - creation of the $branch_name branch and branch link to issue $2 - $github_name"
