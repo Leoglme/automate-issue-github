@@ -60,6 +60,7 @@ MergeIssueInTest() {
     git pull origin "$test_branch"
     echo "git checkout "$test_branch""
     git checkout "$test_branch"
+    sleep 5
     echo "git merge "$branch_name""
     git merge "$branch_name"
     echo "git push origin "$test_branch""
