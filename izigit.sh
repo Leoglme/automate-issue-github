@@ -85,11 +85,10 @@ MergeIssueInTest() {
 
 }
 
-# Fonction for reset of a branch, so that it is strictly identical to the preprod branch
-# Arguments: $2 = branch name //test
-ResetBranchToPreprod() {
-  if [ $2 ]; then
-    $reference_branch="preprod"
+# Fonction for reset test branch, so that it is strictly identical to the preprod branch
+ResetTestToPreprod() {
+    test_branch="test"
+    reference_branch="preprod"
 
     # Fetch and checkout the reference branch (preprod)
     git fetch
@@ -97,16 +96,13 @@ ResetBranchToPreprod() {
     git pull $reference_branch
 
     # Delete the local working branch
-    git branch -D $2
+    git branch -D $test_branch
 
     # Create a new branch from the reference branch (preprod)
-    git checkout -b $2
+    git checkout -b $test_branch
 
     # Push the new branch to the remote repository
-    git push -u origin $2 --force
-    exit 0
-  fi
-  echo "Please specify allows branch name, izigit reset [branch_name] ( example: izigit reset test )"
+    git push -u origin $test_branch --force
 }
 
 # Fonction for create branch for ticket and fetch, checkout this branch
@@ -136,6 +132,9 @@ CreateBranch() {
     # Affichage de la date
     comment="$date - creation of the $branch_name branch and branch link to issue $2 - $github_name"
 
+    # Add comment to issue
+    gh issue comment $2 -b "$comment"
+
     echo $comment
     exit 0
   fi
@@ -161,5 +160,5 @@ if [ $OPTIND -eq 1 ] && [ $# -eq 0 ]; then echo "An argument is required, please
 
 # Enable options
 if [ "$1" == "create" ]; then CreateBranch $1 $2; fi
-if [ "$1" == "reset" ]; then ResetBranchToPreprod $1 $2; fi
+if [ "$1" == "reset" ]; then ResetTestToPreprod; fi
 if [ "$1" == "test" ]; then MergeIssueInTest $1 $2; fi
