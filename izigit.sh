@@ -111,6 +111,9 @@ ResetTestToPreprod() {
 
     # Push the new branch to the remote repository
     git push -u origin $test_branch --force
+
+    comment="$date - $test_branch reset to $reference_branch - $github_name"
+    echo $comment
 }
 
 # Fonction for create branch for ticket and fetch, checkout this branch
@@ -132,7 +135,6 @@ CreateBranch() {
     # Checkout to the created branch
     git checkout $branch_name
 
-    # Affichage de la date
     comment="$date - creation of the $branch_name branch and branch link to issue $2 - $github_name"
 
     # Add comment to issue
