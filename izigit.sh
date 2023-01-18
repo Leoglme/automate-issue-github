@@ -55,6 +55,8 @@ PrIssueToPreprod() {
     git checkout $issue_branch_name
     git merge $preprod_branch
 
+    git status
+
     # Check if there are any conflicts
     #disable lf and crlf warnings
     git config core.autocrlf false
