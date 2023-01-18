@@ -57,9 +57,10 @@ MergeIssueInTest() {
       exit 0
     fi
 
-    git checkout $current_branch
-    git reset --hard $test_branch
-    git push --force origin $current_branch
+    git pull origin "$test_branch"
+    git checkout "$test_branch"
+    git merge "$branch_name"
+    git push origin "$test_branch"
     exit 0
   fi
   echo "Please specify allows ticket number, izigit test [ticket_number] ( example: izigit test 654 )"
