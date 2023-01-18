@@ -48,19 +48,31 @@ PrIssueToPreprod() {
 # Arguments: $2 = ticket number
 MergeIssueInTest() {
   if [ $2 ]; then
-    test_branch="test"
-    # Get branch name with ticket number
-    branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
+#    test_branch="test"
+#    # Get branch name with ticket number
+#    branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
+#
+#    if [ -z $branch_name ]; then
+#      echo "No git branch found for ticket $2"
+#      exit 0
+#    fi
+#    git checkout "$test_branch"
+#    git pull origin "$test_branch"
+#    git merge 4-task-4
+#    git push origin "$test_branch"
+#    exit 0
 
-    if [ -z $branch_name ]; then
-      echo "No git branch found for ticket $2"
-      exit 0
-    fi
-    git checkout "$test_branch"
-    git pull origin "$test_branch"
-    git merge 4-task-4
-    git push origin "$test_branch"
-    exit 0
+   # Positionnement sur la branche test
+   git checkout test
+
+   # Récupération des dernières mises à jour de la branche test
+   git pull origin test
+
+   # Fusion de la branche 4-task-4 dans test
+   git merge 4-task-4
+
+   # Envoi des modifications sur le dépôt distant
+   git push origin test
   fi
   echo "Please specify allows ticket number, izigit test [ticket_number] ( example: izigit test 654 )"
 }
