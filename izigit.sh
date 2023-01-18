@@ -50,10 +50,10 @@ PrIssueToPreprod() {
     fi
 
     # Updates the issue branch, relative to the preprod branch
-    git checkout $preprod_branch
-    git pull origin $preprod_branch
     git checkout $issue_branch_name
+    git pull origin $issue_branch_name
     git merge $preprod_branch
+    git push origin $issue_branch_name
 
     git status
 
