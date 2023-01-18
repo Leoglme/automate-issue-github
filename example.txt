@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 preproregfrgdefefefefeffe
 totobiduMACHINleefgrrgfefeef
 zddzddzdz
+=======
+preproregfrgdefedededfeefefefeffe
+totobiduleefgrrgfefeef
+zdAAAAAAAAAAAAAAdzddzdz
+>>>>>>> preprod
 dzzdzd
