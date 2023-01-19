@@ -1,6 +1,6 @@
 <h2 align="center">Automate issue github</h2>
 
-<p>shell script to automate git features and gthub issues</p>
+<p>shell script to automate git features and github issues</p>
 
 
 ![Language](https://img.shields.io/badge/language-shell-6fa323.svg?style=flat)
