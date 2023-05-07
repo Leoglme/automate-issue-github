@@ -67,8 +67,7 @@ PrIssueToPreprod() {
     # Get issue title
     pr_title=$(gh issue view $2 --json title --jq .title)
     # remove special characters from pr_title
-    pr_title=${issue_title//[^a-zA-Z0-9 ]/}
-
+    pr_title=${pr_title//[^a-zA-Z0-9 ]/}
 
     # Create a pull request from the issue branch to the target branch (preprod)
     gh pr create --base preprod --head $issue_branch_name -t "$2 $pr_title" -b ""
