@@ -10,8 +10,12 @@ command -v gh >/dev/null 2>&1 || {
 # Retrieving the current date
 date=$(date +"%d/%m/%Y %T")
 
-# Get Your github Username
+# Get Your github Name or Username
 github_name=$(gh api user -q .name)
+
+if [ -z "$github_name" ]; then
+  github_name=$(gh api user -q .login)
+fi
 
 # Help command
 
@@ -30,30 +34,31 @@ Help() {
   echo "options:"
   echo ""
   echo "create [ticket_number] Create, fetch and checkout branch for ticket ( example: izigit create 654 )"
-  echo "reset Reset test branch, so that it is strictly identical to the preprod branch ( example: izigit reset )"
+  echo "reset Reset test branch, so that it is strictly identical to the main branch ( example: izigit reset )"
   echo "test [ticket_number] Merge issue branch into test branch ( example: izigit test 654 )"
-  echo "pr [ticket_number] Creating a pull request from the github issue branch to the preprod branch ( example: izigit pr 654 )"
+  echo "pr [ticket_number] Creating a pull request from the github issue branch to the main branch ( example: izigit pr 654 )"
   echo "h     Print this Help."
 }
 
-# Creating a pull request from the github issue branch to the preprod branch
+# Creating a pull request from the github issue branch to the main branch
 # Arguments: $2 = ticket number
-PrIssueToPreprod() {
-  if [ $2 ]; then
-    preprod_branch=preprod
+PrIssueToMain() {
+  if [ "$2" ]; then
+    main_branch=main
     # Get branch name with ticket number
-    issue_branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
+    issue_branch_name=$(git branch -r | grep "$2" | sed 's/origin\///' | sed 's/^ *//')
 
-    if [ -z $issue_branch_name ]; then
+    if [ -z "$issue_branch_name" ]; then
       echo "No git branch found for ticket $2"
       exit 0
     fi
 
-    # Updates the issue branch, relative to the preprod branch
-    git checkout $issue_branch_name
+    # Updates the issue branch, relative to the main branch
+    git checkout "$issue_branch_name"
+    # shellcheck disable=SC2086
     git pull origin $issue_branch_name
-    git merge $preprod_branch
-    git push origin $issue_branch_name
+    git merge $main_branch
+    git push origin "$issue_branch_name"
 
     # Check if there are any conflicts
     #disable lf and crlf warnings
@@ -65,17 +70,21 @@ PrIssueToPreprod() {
     fi
 
     # Get issue title
-    pr_title=$(gh issue view $2 --json title --jq .title)
+    pr_title=$(gh issue view "$2" --json title --jq .title)
     # remove special characters from pr_title
     pr_title=${pr_title//[^a-zA-Z0-9 ]/}
 
-    # Create a pull request from the issue branch to the target branch (preprod)
-    gh pr create --base preprod --head $issue_branch_name -t "$2 $pr_title" -b ""
+    # Create a pull request from the issue branch to the target branch (main)
+    # Create a pull request and get its URL
+    pr_url=$(gh pr create --base $main_branch --head "$issue_branch_name" -t "$2 $pr_title" -b "" | grep -o 'https://github.com[^ ]*')
+
+    # Get PR number
+    pr_number=$(echo "$pr_url" | grep -oP '/pull/\K[0-9]+')
 
     # Add comment to issue
-    comment="$date - create pull request branch $issue_branch_name to $preprod_branch - $github_name"
-    gh issue comment $2 -b "$comment"
-    echo $comment
+    comment="$date - create pull request branch $issue_branch_name to $main_branch - $github_name. [PR #$pr_number]($pr_url)"
+    gh issue comment "$2" -b "$comment"
+    echo "$comment"
     exit 0
   fi
   echo "Please specify allows ticket number, izigit pr [ticket_number] ( example: izigit pr 654 )"
@@ -84,8 +93,8 @@ PrIssueToPreprod() {
 # Fonction for merge issue branch into test branch
 # Arguments: $2 = ticket number
 MergeIssueInTest() {
-  if [ $2 ]; then
-    test_branch=test
+  if [ "$2" ]; then
+    test_branch="test"
     # Get branch name with ticket number
     branch_name=$(git branch -r | grep $2 | sed 's/origin\///')
 
@@ -96,24 +105,24 @@ MergeIssueInTest() {
 
     git checkout $test_branch
     git pull origin $test_branch
-    git merge $branch_name
+    git merge "$branch_name"
     git push origin $test_branch
 
     # Add comment to issue
     comment="$date - merge branch $branch_name into $test_branch - $github_name"
-    gh issue comment $2 -b "$comment"
-    echo $comment
+    gh issue comment "$2" -b "$comment"
+    echo "$comment"
     exit 0
   fi
   echo "Please specify allows ticket number, izigit test [ticket_number] ( example: izigit test 654 )"
 }
 
-# Fonction for reset test branch, so that it is strictly identical to the preprod branch
-ResetTestToPreprod() {
+# Fonction for reset test branch, so that it is strictly identical to the main branch
+ResetTestToMain() {
   test_branch="test"
-  reference_branch="preprod"
+  reference_branch="main"
 
-  # Fetch and checkout the reference branch (preprod)
+  # Fetch and checkout the reference branch (main)
   git fetch
   git checkout $reference_branch
   git pull $reference_branch
@@ -121,14 +130,14 @@ ResetTestToPreprod() {
   # Delete the local working branch
   git branch -D $test_branch
 
-  # Create a new branch from the reference branch (preprod)
+  # Create a new branch from the reference branch (main)
   git checkout -b $test_branch
 
   # Push the new branch to the remote repository
   git push -u origin $test_branch --force
 
   comment="$date - $test_branch reset to $reference_branch - $github_name"
-  echo $comment
+  echo "$comment"
 }
 
 # Fonction for create branch for ticket and fetch, checkout this branch
@@ -140,7 +149,7 @@ CreateBranch() {
     # Assign user to issue
     gh issue edit "$2" --add-assignee "$github_username"
     # Get the title of the issue using the gh command
-    issue_title=$(gh issue view $2 --json title --jq .title)
+    issue_title=$(gh issue view "$2" --json title --jq .title)
     # remove special characters from issue_title
     issue_title=${issue_title//[^a-zA-Z0-9 ]/}
     # replace multiple spaces with single space and trim title
@@ -148,18 +157,18 @@ CreateBranch() {
     # Replace spaces with dashes and concatenate the issue number to the branch name to avoid filename issues
     branch_name=$2-${issue_title// /-}
     # Create the issue branch and link the branch to the GitHub issue
-    gh issue develop $2 --name $branch_name --base $branch_name
+    gh issue develop "$2" --name "$branch_name" --base "$branch_name"
 
     git fetch origin
     # Checkout to the created branch
-    git checkout $branch_name
+    git checkout "$branch_name"
 
     comment="$date - creation of the $branch_name branch and branch link to issue $2 - $github_name"
 
     # Add comment to issue
-    gh issue comment $2 -b "$comment"
+    gh issue comment "$2" -b "$comment"
 
-    echo $comment
+    echo "$comment"
     exit 0
   fi
   echo "Please specify allows ticket number, izigit create [ticket_number] ( example: izigit create 654 )"
@@ -183,7 +192,7 @@ done
 if [ $OPTIND -eq 1 ] && [ $# -eq 0 ]; then echo "An argument is required, please use command -h for display help"; fi
 
 # Enable options
-if [ "$1" == "create" ]; then CreateBranch $1 $2; fi
-if [ "$1" == "reset" ]; then ResetTestToPreprod; fi
-if [ "$1" == "test" ]; then MergeIssueInTest $1 $2; fi
-if [ "$1" == "pr" ]; then PrIssueToPreprod $1 $2; fi
+if [ "$1" == "create" ]; then CreateBranch "$1" "$2"; fi
+if [ "$1" == "reset" ]; then ResetTestToMain; fi
+if [ "$1" == "test" ]; then MergeIssueInTest "$1" "$2"; fi
+if [ "$1" == "pr" ]; then PrIssueToMain "$1" "$2"; fi
